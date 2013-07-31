@@ -10,3 +10,5 @@ game-utils/res
 game-utils/gen
 game-utils/bin
 proguard-project.txt
+game-utils/core
+*.log
