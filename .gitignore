@@ -4,7 +4,7 @@ project.properties
 .settings
 .project
 .cproject
-obj/
+game-utils/obj
 game-utils/*.png
 game-utils/res
 game-utils/gen
