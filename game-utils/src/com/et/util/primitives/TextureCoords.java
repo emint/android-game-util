@@ -18,8 +18,7 @@ public class TextureCoords {
   }
   
   public TextureCoords(float u, float v) {
-    this.u = u;
-    this.v = v;
+    this(u, v, 0f);
   }
 
   public float getU() {

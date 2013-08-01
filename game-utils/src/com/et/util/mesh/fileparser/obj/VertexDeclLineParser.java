@@ -22,7 +22,7 @@ public class VertexDeclLineParser {
     StringTokenizer tokenizer = new StringTokenizer(vertexDeclaration);
     if (!validVertexDeclComponentCount(tokenizer) || 
         !tokenizer.nextToken().equals(VERTEX_LINE_HEADER)) {
-      throwInvalidVertexDeclaration(vertexDeclaration);
+      throwInvalidVertexDeclarationException(vertexDeclaration);
     }
     
     try {
@@ -32,7 +32,7 @@ public class VertexDeclLineParser {
       float w = (tokenizer.hasMoreTokens() ? Float.parseFloat(tokenizer.nextToken()) : 1);
       return new Vertex(x, y, z, w);
     } catch (NumberFormatException e) {
-      throwInvalidVertexDeclaration(vertexDeclaration);
+      throwInvalidVertexDeclarationException(vertexDeclaration);
     }
     throw new IllegalStateException(String.format("Something went very wrong parsing vertex " +
     		"declaration: [%s].", vertexDeclaration));
@@ -43,7 +43,7 @@ public class VertexDeclLineParser {
     return count == MIN_VERTEX_DECL_COMPONENTS || count == MAX_VERTEX_DECL_COMPONENTS;
   }
 
-  private void throwInvalidVertexDeclaration(String vertexDeclaration) {
+  private void throwInvalidVertexDeclarationException(String vertexDeclaration) {
     String errorMessage = String.format(
         "Provided argument [%s] is not a valid vertex declaration.", vertexDeclaration);
     throw new IllegalArgumentException(errorMessage);
