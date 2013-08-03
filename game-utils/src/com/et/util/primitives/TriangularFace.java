@@ -73,7 +73,7 @@ public class TriangularFace {
       return true;
     }
     
-    if (obj == null || !(this instanceof TriangularFace)) {
+    if (obj == null || !(obj instanceof TriangularFace)) {
       return false;
     }
     
