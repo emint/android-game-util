@@ -20,16 +20,18 @@ public class TextureCoordDeclLineParser {
       throwInvalidTextureDeclarationException(textureCoordsDeclaration);
     }
     
+    float u = 0;
+    float v = 0;
+    float w = 0;
+    
     try {
-      float u = Float.parseFloat(tokenizer.nextToken());
-      float v = Float.parseFloat(tokenizer.nextToken());
-      float w = (tokenizer.hasMoreTokens() ? Float.parseFloat(tokenizer.nextToken()) : 0);
-      return new TextureCoords(u, v, w);
+      u = Float.parseFloat(tokenizer.nextToken());
+      v = Float.parseFloat(tokenizer.nextToken());
+      w = (tokenizer.hasMoreTokens() ? Float.parseFloat(tokenizer.nextToken()) : 0);
     } catch (NumberFormatException e) {
       throwInvalidTextureDeclarationException(textureCoordsDeclaration);
     }
-    throw new IllegalStateException(String.format("Something went very wrong parsing texture " +
-            "coord declaration: [%s].", textureCoordsDeclaration));
+    return new TextureCoords(u, v, w);
   }
   
   private void throwInvalidTextureDeclarationException(String textureCoordsDeclaration) {

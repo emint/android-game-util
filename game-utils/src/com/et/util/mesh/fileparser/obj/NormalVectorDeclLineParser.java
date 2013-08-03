@@ -24,16 +24,18 @@ public class NormalVectorDeclLineParser {
       throwInvalidNormalDeclarationException(normalDeclaration);
     }
     
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    
     try {
-      float x = Float.parseFloat(tokenizer.nextToken());
-      float y = Float.parseFloat(tokenizer.nextToken());
-      float z = Float.parseFloat(tokenizer.nextToken());
-      return new NormalVector(x, y, z);
+      x = Float.parseFloat(tokenizer.nextToken());
+      y = Float.parseFloat(tokenizer.nextToken());
+      z = Float.parseFloat(tokenizer.nextToken());
     } catch (NumberFormatException e) {
       throwInvalidNormalDeclarationException(normalDeclaration);
     }
-    throw new IllegalStateException(String.format("Something went very wrong parsing normal " +
-        "declaration: [%s].", normalDeclaration));
+    return new NormalVector(x, y, z);
   }
 
   private void throwInvalidNormalDeclarationException(String normalDeclaration) {

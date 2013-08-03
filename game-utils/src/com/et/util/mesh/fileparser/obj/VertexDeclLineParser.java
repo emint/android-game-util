@@ -25,17 +25,20 @@ public class VertexDeclLineParser {
       throwInvalidVertexDeclarationException(vertexDeclaration);
     }
     
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    float w = 0;
+    
     try {
-      float x = Float.parseFloat(tokenizer.nextToken());
-      float y = Float.parseFloat(tokenizer.nextToken());
-      float z = Float.parseFloat(tokenizer.nextToken());
-      float w = (tokenizer.hasMoreTokens() ? Float.parseFloat(tokenizer.nextToken()) : 1);
-      return new Vertex(x, y, z, w);
+      x = Float.parseFloat(tokenizer.nextToken());
+      y = Float.parseFloat(tokenizer.nextToken());
+      z = Float.parseFloat(tokenizer.nextToken());
+      w = (tokenizer.hasMoreTokens() ? Float.parseFloat(tokenizer.nextToken()) : 1);
     } catch (NumberFormatException e) {
       throwInvalidVertexDeclarationException(vertexDeclaration);
     }
-    throw new IllegalStateException(String.format("Something went very wrong parsing vertex " +
-    		"declaration: [%s].", vertexDeclaration));
+    return new Vertex(x, y, z, w);
   }
 
   private boolean validVertexDeclComponentCount(StringTokenizer tokenizer) {
