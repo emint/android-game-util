@@ -19,7 +19,7 @@ public class Vertex {
   }
   
   public Vertex(float x, float y, float z) {
-    this(x,y,z,1);
+    this(x, y, z, 1f);
   }
 
   public float getX() {
