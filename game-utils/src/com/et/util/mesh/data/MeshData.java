@@ -115,12 +115,13 @@ public class MeshData {
     private String name = null;
     
     public Builder setVertices(List<Vertex> providedVertices) {
-      verticies = FloatBuffer.allocate(providedVertices.size() * 3);
+      verticies = FloatBuffer.allocate(providedVertices.size() * 4);
       
       for (Vertex vert : providedVertices) {
         verticies.put(vert.getX());
         verticies.put(vert.getY());
         verticies.put(vert.getZ());
+        verticies.put(vert.getW());
       }
       
       return this;
