@@ -26,37 +26,44 @@ public class ObjFileMeshObjectParserTest {
   private static final int NUM_TEX_COMPONENTS = 2;
   private static final int NUM_NORMAL_COMPONENTS = 3;
   private static final int NUM_VERTEX_COMPONENTS = 4;
+  private static final int NUM_FACE_VERTEX_COMPONENTS = 1;
+  private static final int NUM_FACE_VERTEX_NORMAL_COMPONENTS = 2;
+  private static final int NUM_FACE_VERTEX_TEX_COMPONENTS = 2;
+  private static final int NUM_FACE_ALL_COMPONENTS = 3;
   
   @Inject ObjFileMeshObjectParser parser;
+  TestObjFileGenerator fileGenerator = new TestObjFileGenerator();
+  
+  private List<Float> vertices;
+  private List<Float> normals;
+  private List<Float> texCoords;
   
   @Before
   public void setUp() {
     parser = Guice.createInjector(new MeshFileParserModule()).getInstance(
         ObjFileMeshObjectParser.class);
+    
+    vertices = generateRandomFloats(/* numToGenerate */ 4 * NUM_VERTEX_COMPONENTS);
+    normals = generateRandomFloats(/* numToGenerate */ 4 * NUM_NORMAL_COMPONENTS);
+    texCoords = generateRandomFloats(/* numToGenerate */ 4 * NUM_TEX_COMPONENTS);
   }
   
   @Test
   public void testParsesVertices() {
-    StringBuffer file = new StringBuffer();
-    List<Float> vertices = generateRandomFloats(/* numToGenerate */ 4 * NUM_VERTEX_COMPONENTS);
-    writeVertices(vertices, file);
+    String file = fileGenerator.createWithVertices(vertices);
+    
     ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
         file.toString().getBytes()));
     MeshData data = createMeshData("default", vertices, (List<Float>) null, (List<Float>) null,
         (List<Integer>) null, (List<Integer>) null, (List<Integer>) null);
+    
     MeshObject expectedObject = createMeshObject(data);
-    assertEquals(expectedObject, parser.parse(objFile));
+    assertEquals("For file: " + file.toString(), expectedObject, parser.parse(objFile));
   }
   
   @Test
   public void testParsesVerticesAndNormals() {
-    StringBuffer file = new StringBuffer();
-    
-    List<Float> vertices = generateRandomFloats(/* numToGenerate */ 4 * NUM_VERTEX_COMPONENTS);
-    writeVertices(vertices, file);
-    
-    List<Float> normals = generateRandomFloats(/* numToGenerate */ 4 * NUM_NORMAL_COMPONENTS);
-    writeNormals(normals, file);
+    String file = fileGenerator.createWithVerticesAndNormals(vertices, normals);
     
     MeshData data = createMeshData("default", vertices, normals, (List<Float>) null,
         (List<Integer>) null, (List<Integer>) null, (List<Integer>) null);
@@ -64,21 +71,12 @@ public class ObjFileMeshObjectParserTest {
     
     ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
         file.toString().getBytes()));
-    assertEquals(expectedObject, parser.parse(objFile));
+    assertEquals("For file: " + file.toString(), expectedObject, parser.parse(objFile));
   }
   
   @Test
   public void testParsesAllComponents() {
-    StringBuffer file = new StringBuffer();
-    
-    List<Float> vertices = generateRandomFloats(/* numToGenerate */ 4 * NUM_VERTEX_COMPONENTS);
-    writeVertices(vertices, file);
-    
-    List<Float> normals = generateRandomFloats(/* numToGenerate */ 4 * NUM_NORMAL_COMPONENTS);
-    writeNormals(normals, file);
-    
-    List<Float> texCoords = generateRandomFloats(/* numToGenerate */ 4 * NUM_TEX_COMPONENTS);
-    writeTexCoords(texCoords, file);
+    String file = fileGenerator.createWithAllComponents(vertices, texCoords, normals);
     
     MeshData data = createMeshData("default", vertices, normals, texCoords, (List<Integer>) null,
         (List<Integer>) null, (List<Integer>) null);
@@ -86,49 +84,24 @@ public class ObjFileMeshObjectParserTest {
     
     ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
         file.toString().getBytes()));
-    assertEquals(expectedObject, parser.parse(objFile));
+    assertEquals("For file: " + file.toString(), expectedObject, parser.parse(objFile));
   }
   
   @Test
   public void testParsesAllComponentsOutOfOrder() {     
-    StringBuffer file = new StringBuffer();
+    String file = fileGenerator.createWithAllComponentsInterleave(vertices, texCoords, normals);
     
-    List<Float> allNormals = Lists.newArrayList();
-    List<Float> allVertices = Lists.newArrayList();
-    List<Float> allTex = Lists.newArrayList();
-    
-    List<Float> normals = generateRandomFloats(/* numToGenerate */ 2 * NUM_NORMAL_COMPONENTS);
-    writeNormals(normals, file);
-    allNormals.addAll(normals);
-    
-    List<Float> vertices = generateRandomFloats(/* numToGenerate */ 2 * NUM_VERTEX_COMPONENTS);
-    writeVertices(vertices, file);
-    allVertices.addAll(vertices);
-    
-    normals = generateRandomFloats(/* numToGenerate */ 2 * NUM_NORMAL_COMPONENTS);
-    writeNormals(normals, file);
-    allNormals.addAll(normals);
-    
-    List<Float> texCoords = generateRandomFloats(/* numToGenerate */ 2 * NUM_TEX_COMPONENTS);
-    writeTexCoords(texCoords, file);
-    allTex.addAll(texCoords);
-    
-    vertices = generateRandomFloats(/* numToGenerate */ 2 * NUM_VERTEX_COMPONENTS);
-    writeVertices(vertices, file);
-    allVertices.addAll(vertices);
-    
-    texCoords = generateRandomFloats(/* numToGenerate */ 2 * NUM_TEX_COMPONENTS);
-    writeTexCoords(texCoords, file);
-    allTex.addAll(texCoords);
-    
-    System.out.println(file);
-    MeshData data = createMeshData("default", allVertices, allNormals, allTex, (List<Integer>) null,
+    MeshData data = createMeshData("default", vertices, normals, texCoords, (List<Integer>) null,
         (List<Integer>) null, (List<Integer>) null);
     MeshObject expectedObject = createMeshObject(data);
     
     ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
         file.toString().getBytes()));
-    assertEquals(expectedObject, parser.parse(objFile));
+    assertEquals("For file: " + file, expectedObject, parser.parse(objFile));
+  }
+  
+  @Test
+  public void testParsesFaceWithJustVertex() {
   }
   
   private MeshObject createMeshObject(MeshData... meshes) {
@@ -205,33 +178,6 @@ public class ObjFileMeshObjectParserTest {
     }
     return toReturn;
   }
-
-  private void writeVertices(List<Float> vertices, StringBuffer file) {
-    writeToFile(vertices, file, "v", NUM_VERTEX_COMPONENTS);
-  }
-  
-  private void writeNormals(List<Float> normals, StringBuffer file) {
-    writeToFile(normals, file, "vn", NUM_NORMAL_COMPONENTS);
-  }
-  
-  private void writeTexCoords(List<Float> coords, StringBuffer file) {
-    writeToFile(coords, file, "vt", NUM_TEX_COMPONENTS);
-  }
-  
-  private void writeToFile(List<?> data, StringBuffer file, String header, int numComponents) {
-    int numElems = data.size() / numComponents;
-    int pos = 0;
-    for (int i = 0; i < numElems; i++) {
-      file.append(header);
-      int limit = pos + numComponents;
-      for (; pos < limit; pos++) {
-        file.append(" ")
-            .append(data.get(pos))
-            .append(" ");
-      }
-      file.append("\n");
-    }
-  }
   
   private List<Float> generateRandomFloats(int numToGenerate) {
     List<Float> floats = Lists.newArrayList();
@@ -242,5 +188,4 @@ public class ObjFileMeshObjectParserTest {
     
     return floats;
   }
-
 }
