@@ -32,7 +32,7 @@ public class ObjFileMeshObjectParserTest {
   private static final int NUM_FACE_ALL_COMPONENTS = 3;
   
   @Inject ObjFileMeshObjectParser parser;
-  TestObjFileGenerator fileGenerator = new TestObjFileGenerator();
+  TestObjFileGenerator fileGenerator;
   
   private List<Float> vertices;
   private List<Float> normals;
@@ -46,62 +46,75 @@ public class ObjFileMeshObjectParserTest {
     vertices = generateRandomFloats(/* numToGenerate */ 4 * NUM_VERTEX_COMPONENTS);
     normals = generateRandomFloats(/* numToGenerate */ 4 * NUM_NORMAL_COMPONENTS);
     texCoords = generateRandomFloats(/* numToGenerate */ 4 * NUM_TEX_COMPONENTS);
+    
+    fileGenerator = new TestObjFileGenerator(vertices, texCoords, normals);
   }
   
   @Test
   public void testParsesVertices() {
-    String file = fileGenerator.createWithVertices(vertices);
+    String file = fileGenerator.withVertices().generateFile();
     
-    ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
-        file.toString().getBytes()));
+    
     MeshData data = createMeshData("default", vertices, (List<Float>) null, (List<Float>) null,
         (List<Integer>) null, (List<Integer>) null, (List<Integer>) null);
-    
-    MeshObject expectedObject = createMeshObject(data);
-    assertEquals("For file: " + file.toString(), expectedObject, parser.parse(objFile));
+    testGeneration(file, data);
   }
   
   @Test
   public void testParsesVerticesAndNormals() {
-    String file = fileGenerator.createWithVerticesAndNormals(vertices, normals);
+    String file = fileGenerator.withVertices()
+        .withNormals()
+        .generateFile();
     
     MeshData data = createMeshData("default", vertices, normals, (List<Float>) null,
         (List<Integer>) null, (List<Integer>) null, (List<Integer>) null);
-    MeshObject expectedObject = createMeshObject(data);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesVerticesAndTextureCoords() {
+    String file = fileGenerator.withVertices()
+        .withNormals()
+        .withTextureCoords()
+        .generateFile();
     
-    ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
-        file.toString().getBytes()));
-    assertEquals("For file: " + file.toString(), expectedObject, parser.parse(objFile));
+    MeshData data = createMeshData("default", vertices, normals, (List<Float>) null,
+        (List<Integer>) null, (List<Integer>) null, (List<Integer>) null);
+    testGeneration(file, data);
   }
   
   @Test
   public void testParsesAllComponents() {
-    String file = fileGenerator.createWithAllComponents(vertices, texCoords, normals);
+    String file = fileGenerator.withVertices()
+        .withNormals()
+        .withTextureCoords()
+        .generateFile();
     
     MeshData data = createMeshData("default", vertices, normals, texCoords, (List<Integer>) null,
         (List<Integer>) null, (List<Integer>) null);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesAllComponentsOutOfOrder() {     
+    String file = fileGenerator.withAllComponentsInterleaved()
+        .generateFile();
+    
+    MeshData data = createMeshData("default", vertices, normals, texCoords, (List<Integer>) null,
+        (List<Integer>) null, (List<Integer>) null);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesFaceWithJustVertex() {
+  }
+  
+  private void testGeneration(String file, MeshData data) {
     MeshObject expectedObject = createMeshObject(data);
     
     ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
         file.toString().getBytes()));
     assertEquals("For file: " + file.toString(), expectedObject, parser.parse(objFile));
-  }
-  
-  @Test
-  public void testParsesAllComponentsOutOfOrder() {     
-    String file = fileGenerator.createWithAllComponentsInterleave(vertices, texCoords, normals);
-    
-    MeshData data = createMeshData("default", vertices, normals, texCoords, (List<Integer>) null,
-        (List<Integer>) null, (List<Integer>) null);
-    MeshObject expectedObject = createMeshObject(data);
-    
-    ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
-        file.toString().getBytes()));
-    assertEquals("For file: " + file, expectedObject, parser.parse(objFile));
-  }
-  
-  @Test
-  public void testParsesFaceWithJustVertex() {
   }
   
   private MeshObject createMeshObject(MeshData... meshes) {
