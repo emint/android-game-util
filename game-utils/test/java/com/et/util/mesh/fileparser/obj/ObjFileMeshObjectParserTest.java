@@ -48,30 +48,18 @@ public class ObjFileMeshObjectParserTest {
     int numIndicesToGenerate = NUM_FACES * NUM_COMPONENTS_PER_FACE;
 
     vertices = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_VERTEX_COMPONENTS);
-    vIndices = generateRandomIndices(numIndicesToGenerate);
+    vIndices = generateRandomIndices(numIndicesToGenerate, /* maxIndex */ NUM_OF_ELEMENTS);
     
     normals = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_NORMAL_COMPONENTS);
-    nIndices = generateRandomIndices(numIndicesToGenerate);
+    nIndices = generateRandomIndices(numIndicesToGenerate, /* maxIndex */ NUM_OF_ELEMENTS);
     
     texCoords = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_TEX_COMPONENTS);
-    tIndices = generateRandomIndices(numIndicesToGenerate);
+    tIndices = generateRandomIndices(numIndicesToGenerate, /* maxIndex */ NUM_OF_ELEMENTS);
     
     fileGenerator = new TestObjFileGenerator(vertices, texCoords, normals, vIndices, nIndices,
         tIndices);
   }
   
-  private List<Integer> generateRandomIndices(int numToGenerate) {
-    List<Integer> toReturn = Lists.newArrayList();
-    
-    for (int i = 0; i < numToGenerate; i++) {
-      int randInt = (int) (Math.random() * 10);
-      // Face indices are 1-valued
-      toReturn.add((randInt % NUM_OF_ELEMENTS) + 1);
-    }
-    
-    return toReturn;
-  }
-
   @Test
   public void testParsesVertices() {
     String file = fileGenerator.withVertices().generateFile();
@@ -96,11 +84,10 @@ public class ObjFileMeshObjectParserTest {
   @Test
   public void testParsesVerticesAndTextureCoords() {
     String file = fileGenerator.withVertices()
-        .withNormals()
         .withTextureCoords()
         .generateFile();
     
-    MeshData data = createMeshData("default", vertices, normals, (List<Float>) null,
+    MeshData data = createMeshData("default", vertices, (List<Float>) null, texCoords,
         (List<Integer>) null, (List<Integer>) null, (List<Integer>) null);
     testGeneration(file, data);
   }
@@ -130,7 +117,6 @@ public class ObjFileMeshObjectParserTest {
   @Test
   public void testParsesFaceWithJustVertex() {
     String file = fileGenerator.withVertices()
-        .withNormals()
         .withFacesForSetComponents()
         .generateFile();
     
@@ -250,6 +236,43 @@ public class ObjFileMeshObjectParserTest {
     testGeneration(file, data1, data2, data3);
   }
   
+  // A little more complicated test to ensure objects get own copy of data. 
+  @Test
+  public void testObjectsPreserveOwnData() {
+    int numObj1Vertices = 3;
+    List<Float> obj1Vertices = generateRandomFloats(numObj1Vertices * NUM_VERTEX_COMPONENTS);
+    List<Integer> obj1VIndices = generateRandomIndices(5 * NUM_COMPONENTS_PER_FACE,
+        numObj1Vertices);
+    
+    
+    TestObjFileGenerator fileGeneratorObj1 = new TestObjFileGenerator(obj1Vertices, 
+        (List<Float>) null, (List<Float>) null, obj1VIndices, (List<Integer>) null,
+        (List<Integer>)null);
+    
+    String objName1 = "Obj1";
+    String file1 = fileGeneratorObj1.withVertices()
+        .withFacesForSetComponents()
+        .withDefaultObject(false)
+        .forObject(objName1)
+        .generateFile();
+    
+    String objName2 = "Obj2";
+    List<Float> obj2Vertices = Lists.newArrayList();
+    String file2 = fileGeneratorObj1.withVertices(obj2Vertices, obj1VIndices)
+        .withFacesForSetComponents()
+        .withDefaultObject(false)
+        .forObject(objName2)
+        .generateFile();
+    
+    
+    MeshData data1 = createMeshData(objName1, obj1Vertices, (List<Float>) null, (List<Float>) null, 
+        obj1VIndices, (List<Integer>) null, (List<Integer>) null);
+    // We expect that the vertices from obj1 will be brought into the second mesh
+    MeshData data2 = createMeshData(objName2, obj1Vertices, (List<Float>) null, (List<Float>) null, 
+        obj1VIndices, (List<Integer>) null, (List<Integer>) null);
+    testGeneration(file1 + file2, data1, data2);
+  }
+  
   private void testGeneration(String file, MeshData... data) {
     MeshObject expectedObject = createMeshObject(data);
     
@@ -342,4 +365,17 @@ public class ObjFileMeshObjectParserTest {
     
     return floats;
   }
+  
+  private List<Integer> generateRandomIndices(int numToGenerate, int maxIndex) {
+    List<Integer> toReturn = Lists.newArrayList();
+    
+    for (int i = 0; i < numToGenerate; i++) {
+      int randInt = (int) (Math.random() * 10);
+      // Face indices are 1-valued
+      toReturn.add((randInt % maxIndex) + 1);
+    }
+    
+    return toReturn;
+  }
+
 }
