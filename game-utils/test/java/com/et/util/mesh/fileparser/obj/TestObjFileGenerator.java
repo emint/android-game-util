@@ -104,8 +104,7 @@ public class TestObjFileGenerator {
   }
   
   /**
-   * Generates faces with indices for all components that were set. This should be called after all
-   * the components you want in your face have been set.
+   * Generates faces with indices for all components that were set.
    */
   public TestObjFileGenerator withFacesForSetComponents() {
     writeFaces = true;
@@ -121,7 +120,7 @@ public class TestObjFileGenerator {
   }
   
   /**
-   * Specifies if we should also write a section without any object
+   * Specifies if we should also write a section without any object header.
    */
   public TestObjFileGenerator withDefaultObject(boolean withDefault) {
     this.withDefault = withDefault;
@@ -176,7 +175,7 @@ public class TestObjFileGenerator {
           .append(object)
           .append("\n")
           .append(fileBuffer);
-      writeFaces(file, curObj);
+      writeFaces(file, /* objToWriteFor */ curObj);
       curObj++;
     }
   }
