@@ -23,33 +23,55 @@ import com.google.inject.Inject;
  */
 public class ObjFileMeshObjectParserTest {
   
+  private static final int NUM_OF_ELEMENTS = 4;
+  private static final int NUM_FACES = 4;
+  private static final int NUM_COMPONENTS_PER_FACE = 3;
   private static final int NUM_TEX_COMPONENTS = 2;
   private static final int NUM_NORMAL_COMPONENTS = 3;
   private static final int NUM_VERTEX_COMPONENTS = 4;
-  private static final int NUM_FACE_VERTEX_COMPONENTS = 1;
-  private static final int NUM_FACE_VERTEX_NORMAL_COMPONENTS = 2;
-  private static final int NUM_FACE_VERTEX_TEX_COMPONENTS = 2;
-  private static final int NUM_FACE_ALL_COMPONENTS = 3;
   
   @Inject ObjFileMeshObjectParser parser;
   TestObjFileGenerator fileGenerator;
   
   private List<Float> vertices;
+  private List<Integer> vIndices;
   private List<Float> normals;
+  private List<Integer> nIndices;
   private List<Float> texCoords;
+  private List<Integer> tIndices;
   
   @Before
   public void setUp() {
     parser = Guice.createInjector(new MeshFileParserModule()).getInstance(
         ObjFileMeshObjectParser.class);
     
-    vertices = generateRandomFloats(/* numToGenerate */ 4 * NUM_VERTEX_COMPONENTS);
-    normals = generateRandomFloats(/* numToGenerate */ 4 * NUM_NORMAL_COMPONENTS);
-    texCoords = generateRandomFloats(/* numToGenerate */ 4 * NUM_TEX_COMPONENTS);
+    int numIndicesToGenerate = NUM_FACES * NUM_COMPONENTS_PER_FACE;
+
+    vertices = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_VERTEX_COMPONENTS);
+    vIndices = generateRandomIndices(numIndicesToGenerate);
     
-    fileGenerator = new TestObjFileGenerator(vertices, texCoords, normals);
+    normals = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_NORMAL_COMPONENTS);
+    nIndices = generateRandomIndices(numIndicesToGenerate);
+    
+    texCoords = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_TEX_COMPONENTS);
+    tIndices = generateRandomIndices(numIndicesToGenerate);
+    
+    fileGenerator = new TestObjFileGenerator(vertices, texCoords, normals, vIndices, nIndices,
+        tIndices);
   }
   
+  private List<Integer> generateRandomIndices(int numToGenerate) {
+    List<Integer> toReturn = Lists.newArrayList();
+    
+    for (int i = 0; i < numToGenerate; i++) {
+      int randInt = (int) (Math.random() * 10);
+      // Face indices are 1-valued
+      toReturn.add((randInt % NUM_OF_ELEMENTS) + 1);
+    }
+    
+    return toReturn;
+  }
+
   @Test
   public void testParsesVertices() {
     String file = fileGenerator.withVertices().generateFile();
@@ -107,6 +129,63 @@ public class ObjFileMeshObjectParserTest {
   
   @Test
   public void testParsesFaceWithJustVertex() {
+    String file = fileGenerator.withVertices()
+        .withNormals()
+        .withFacesForSetComponents()
+        .generateFile();
+    
+    MeshData data = createMeshData("default", vertices, (List<Float>) null, (List<Float>) null,
+        vIndices, (List<Integer>) null, (List<Integer>) null);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesFaceWithVertexAndNormals() {
+    String file = fileGenerator.withVertices()
+        .withNormals()
+        .withFacesForSetComponents()
+        .generateFile();
+    
+    MeshData data = createMeshData("default", vertices, normals, (List<Float>) null, vIndices, 
+        nIndices, (List<Integer>) null);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesFaceWithVertexAndTextureCoord() {
+    String file = fileGenerator.withVertices()
+        .withTextureCoords()
+        .withFacesForSetComponents()
+        .generateFile();
+    
+    MeshData data = createMeshData("default", vertices, (List<Float>) null, texCoords, vIndices, 
+        (List<Integer>) null, tIndices);
+    testGeneration(file, data);
+  }
+  
+  
+  @Test
+  public void testParsesFaceWithAll() {
+    String file = fileGenerator.withVertices()
+        .withTextureCoords()
+        .withNormals()
+        .withFacesForSetComponents()
+        .generateFile();
+    
+    MeshData data = createMeshData("default", vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesFaceWithAllInterleaved() {
+    String file = fileGenerator.withAllComponentsInterleaved()
+        .withFacesForSetComponents()
+        .generateFile();
+    
+    MeshData data = createMeshData("default", vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    testGeneration(file, data);
   }
   
   private void testGeneration(String file, MeshData data) {
@@ -126,17 +205,17 @@ public class ObjFileMeshObjectParserTest {
   }
   
   private MeshData createMeshData(String name, List<Float> vertices, List<Float> normals,
-      List<Float> texCoords, List<Integer> vertexIdx, List<Integer> normalIdx,
-      List<Integer> texIdx) {
+      List<Float> texCoords, List<Integer> vIndices, List<Integer> nIndices, 
+      List<Integer> tIndices) {
     List<Vertex> vertexList = convertToVertexList(vertices);
     List<NormalVector> normalsList = convertToNormalList(normals);
     List<TextureCoords> textureList = convertToTextureCoordinates(texCoords);
     return new MeshData.Builder().setVertices(vertexList)
         .setNormals(normalsList)
         .setTextureCoords(textureList)
-        .setVertexIndices(vertexIdx)
-        .setNormalIndices(normalIdx)
-        .setTextureCoordIndices(texIdx)
+        .setVertexIndices(vIndices)
+        .setNormalIndices(nIndices)
+        .setTextureCoordIndices(tIndices)
         .setName(name)
         .build();
   }

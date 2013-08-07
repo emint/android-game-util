@@ -210,23 +210,33 @@ public class MeshData {
     }
     
     public Builder setVertexIndices(List<Integer> indices) {
-      return setIndices(indices, textureIndices);
+      if (indices == null) {
+        return this;
+      }
+      vertexIndices = IntBuffer.allocate(indices.size());
+      
+      return setIndices(indices, vertexIndices);
     }
     
     public Builder setNormalIndices(List<Integer> indices) {
+      if (indices == null) {
+        return this;
+      }
+      normalIndices = IntBuffer.allocate(indices.size());
+      
       return setIndices(indices, normalIndices);
     }
     
     public Builder setTextureCoordIndices(List<Integer> indices) {
+      if (indices == null) {
+        return this;
+      }
+      textureIndices = IntBuffer.allocate(indices.size());
+      
       return setIndices(indices, textureIndices);
     }
     
     private Builder setIndices(List<Integer> providedIndices, IntBuffer toSet) {
-      if (providedIndices == null) {
-        return this;
-      }
-      
-      toSet = IntBuffer.allocate(providedIndices.size());
       for (Integer idx : providedIndices) {
         toSet.put(idx);
       }
