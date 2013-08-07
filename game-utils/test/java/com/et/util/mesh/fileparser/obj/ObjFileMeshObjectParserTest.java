@@ -188,7 +188,69 @@ public class ObjFileMeshObjectParserTest {
     testGeneration(file, data);
   }
   
-  private void testGeneration(String file, MeshData data) {
+  @Test
+  public void testParsesObject() {
+    String objName = "Obj1";
+    String file = fileGenerator.withVertices()
+        .withTextureCoords()
+        .withNormals()
+        .withFacesForSetComponents()
+        .forObject(objName)
+        .withDefaultObject(false)
+        .generateFile();
+    
+    MeshData data = createMeshData(objName, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    testGeneration(file, data);
+  }
+  
+  @Test
+  public void testParsesMultipleObjects() {
+    String objName1 = "Obj1";
+    String objName2 = "Obj2";
+    String objName3 = "Obj3";
+    String file = fileGenerator.withVertices()
+        .withTextureCoords()
+        .withNormals()
+        .withFacesForSetComponents()
+        .forObject(objName1)
+        .forObject(objName2)
+        .forObject(objName3)
+        .withDefaultObject(false)
+        .generateFile();
+    
+    MeshData data1 = createMeshData(objName1, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    MeshData data2 = createMeshData(objName2, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    MeshData data3 = createMeshData(objName3, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    testGeneration(file, data1, data2, data3);
+  }
+  
+  @Test
+  public void testParsesMultipleObjectsWithDefault() {
+    String objName1 = "default";
+    String objName2 = "Obj2";
+    String objName3 = "Obj3";
+    String file = fileGenerator.withVertices()
+        .withTextureCoords()
+        .withNormals()
+        .withFacesForSetComponents()
+        .forObject(objName2)
+        .forObject(objName3)
+        .generateFile();
+    
+    MeshData data1 = createMeshData(objName1, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    MeshData data2 = createMeshData(objName2, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    MeshData data3 = createMeshData(objName3, vertices, normals, texCoords, vIndices, nIndices, 
+        tIndices);
+    testGeneration(file, data1, data2, data3);
+  }
+  
+  private void testGeneration(String file, MeshData... data) {
     MeshObject expectedObject = createMeshObject(data);
     
     ResourceObjFile objFile = new ResourceObjFile(new ByteArrayInputStream(
