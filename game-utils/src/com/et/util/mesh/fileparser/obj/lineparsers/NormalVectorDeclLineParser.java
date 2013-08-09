@@ -9,8 +9,9 @@ import com.et.util.primitives.geom.NormalVector;
  */
 public class NormalVectorDeclLineParser {
   
+  public static final String NORMAL_LINE_HEADER = "vn";
+
   private static final float NUMBER_NORMAL_COMPONENTS = 4;
-  private static final String NORMAL_LINE_HEADER = "vn";
   
   /**
    * Parses a line declaring a normal vector. Expected format is "vn x y z" where "x y z" specify

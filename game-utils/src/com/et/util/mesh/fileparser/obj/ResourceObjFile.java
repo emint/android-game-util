@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Queue;
 
 import com.et.util.mesh.files.MeshFile;
+import com.google.common.collect.Queues;
 
 /**
  * An object file derived from an android raw text resource.
@@ -14,6 +16,7 @@ public class ResourceObjFile implements MeshFile<String> {
   
   private final BufferedReader fileReader;
   private String nextLine;
+  private Queue<String> returnedElements = Queues.newLinkedBlockingDeque();
   
   public ResourceObjFile(InputStream fileStream) {
     fileReader = new BufferedReader(new InputStreamReader(fileStream));
@@ -25,10 +28,15 @@ public class ResourceObjFile implements MeshFile<String> {
 
   @Override
   public String getNextElement() {
-    // Save the current line
-    String toReturn = nextLine;
-    // Move to next line
-    lookAhead();
+    String toReturn;
+    if (returnedElements.isEmpty()) {
+      // Save the current line
+      toReturn = nextLine;
+      // Read ahead in file
+      lookAhead();
+    } else {
+      toReturn = returnedElements.remove();
+    }
     return toReturn;
   }
 
@@ -43,6 +51,11 @@ public class ResourceObjFile implements MeshFile<String> {
   @Override
   public boolean hasMoreElements() {
     return nextLine != null;
+  }
+
+  @Override
+  public void putLine(String line) {
+    returnedElements.add(line);
   }
 
 }

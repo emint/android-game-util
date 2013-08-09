@@ -11,9 +11,10 @@ import com.google.common.collect.Lists;
  * meshes are triangulated so only search for three declarations of indices.
  */
 public class FaceDeclLineParser {
+
+  public static final String FACE_LINE_HEADER = "f";
   
   private static final String COMPONENT_DELIM = "/";
-  private static final String FACE_LINE_HEADER = "f";
   // We expect three values, one per vertex, for all set values
   private static final int NUMBER_ELEMENTS_PER_VALUE = 3;
   private static final int MIN_NUM_INDICES_AND_DELIM = 1;

@@ -204,7 +204,7 @@ public class MeshData {
       }
       
       for (TriangularFace face : providedFaces) {
-        allocateFace(face);
+        allocateIndicesFromFace(face);
       }
       return this;
     }
@@ -254,7 +254,7 @@ public class MeshData {
       return new MeshData(this);
     }
     
-    private void allocateFace(TriangularFace face) {
+    private void allocateIndicesFromFace(TriangularFace face) {
       vertexIndices = IntBuffer.allocate(face.getVertexIndices().size() * 3);
       normalIndices = (face.hasNormals() ? IntBuffer.allocate(face.getNormalIndices().size() * 3) :
         null);

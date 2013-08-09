@@ -15,4 +15,9 @@ public interface MeshFile <T> {
    * Tells you if more elements are left to parse.
    */
   boolean hasMoreElements();
+  
+  /**
+   * Allows you put a line which will be returned on next read.
+   */
+  void putLine(String line);
 }

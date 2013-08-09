@@ -9,9 +9,10 @@ import com.et.util.primitives.geom.Vertex;
  */
 public class VertexDeclLineParser {
   
+  public static final String VERTEX_LINE_HEADER = "v";
+
   private static final int MIN_VERTEX_DECL_COMPONENTS = 4;
   private static final int MAX_VERTEX_DECL_COMPONENTS = 5;
-  private static final String VERTEX_LINE_HEADER = "v";
   
   /**
    * Parses a line declaring a vertex. These lines are of form 'v x y z [w],' where 'v' denotes a

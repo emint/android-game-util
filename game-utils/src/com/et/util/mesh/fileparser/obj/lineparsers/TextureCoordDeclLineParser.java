@@ -9,9 +9,10 @@ import com.et.util.primitives.TextureCoords;
  */
 public class TextureCoordDeclLineParser {
   
+  public static final String TEXTURE_LINE_HEADER = "vt";
+
   private static final int MIN_TEXTURE_COORD_DECL_COMPONENTS = 3;
   private static final int MAX_TEXTURE_COORD_DECL_COMPONENTS = 4;
-  private static final String TEXTURE_LINE_HEADER = "vt";
   
   public TextureCoords parseTextureCords(String textureCoordsDeclaration) {
     StringTokenizer tokenizer = new StringTokenizer(textureCoordsDeclaration);

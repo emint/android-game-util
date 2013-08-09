@@ -307,7 +307,7 @@ public class ObjFileMeshObjectParserTest {
 
   private List<NormalVector> convertToNormalList(List<Float> normals) {
     if (normals == null) {
-      return null;
+      return Lists.newArrayList();
     }
     
     List<NormalVector> toReturn = Lists.newArrayList();
@@ -324,7 +324,7 @@ public class ObjFileMeshObjectParserTest {
 
   private List<TextureCoords> convertToTextureCoordinates(List<Float> texCoords) {
     if (texCoords == null) {
-      return null;
+      return Lists.newArrayList();
     }
     
     List<TextureCoords> toReturn = Lists.newArrayList();
@@ -340,7 +340,7 @@ public class ObjFileMeshObjectParserTest {
 
   private List<Vertex> convertToVertexList(List<Float> vertices) {
     if (vertices == null) {
-      return null;
+      return Lists.newArrayList();
     }
     
     List<Vertex> toReturn = Lists.newArrayList();
