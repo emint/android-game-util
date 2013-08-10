@@ -1,6 +1,5 @@
 package com.et.util.mesh.fileparser.obj;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -35,16 +34,19 @@ public class ObjFileMeshObjectParser implements MeshObjectParser<ResourceObjFile
   private final NormalVectorDeclLineParser normalLineParser;
   private final TextureCoordDeclLineParser textureCoordLineParser;
   private final FaceDeclLineParser faceLineParser;
+  private final ObjMeshLocalizer meshLocalizer;
   
   @Inject
   public ObjFileMeshObjectParser(VertexDeclLineParser vertexLineParser,
       NormalVectorDeclLineParser normalLineParser,
       TextureCoordDeclLineParser textureCoordLineParser,
-      FaceDeclLineParser faceLineParser) {
+      FaceDeclLineParser faceLineParser,
+      ObjMeshLocalizer meshLocalizer) {
     this.vertexLineParser = vertexLineParser;
     this.normalLineParser = normalLineParser;
     this.textureCoordLineParser = textureCoordLineParser;
     this.faceLineParser = faceLineParser;
+    this.meshLocalizer = meshLocalizer;
   }
 
   @Override
@@ -94,8 +96,8 @@ public class ObjFileMeshObjectParser implements MeshObjectParser<ResourceObjFile
       if (op.equals(OBJECT_LINE_HEADER)) {
         // Return object declaration and return
         file.putLine(nextElement);
-        makeLocalMeshData(meshDataBuilder, globalVertices, globalTextureCoords, globalNormals,
-            faces);
+        meshLocalizer.makeLocalMeshData(meshDataBuilder, globalVertices, globalTextureCoords,
+            globalNormals, faces);
         return;
       }
       
@@ -106,74 +108,10 @@ public class ObjFileMeshObjectParser implements MeshObjectParser<ResourceObjFile
         logger.warn("Error processing element in file.", e);
       }
     }
-    makeLocalMeshData(meshDataBuilder, globalVertices, globalTextureCoords, globalNormals, faces);
+    meshLocalizer.makeLocalMeshData(meshDataBuilder, globalVertices, globalTextureCoords, 
+        globalNormals, faces);
   }
 
-  private void makeLocalMeshData(Builder meshDataBuilder, List<Vertex> globalVertices,
-      List<TextureCoords> globalTextureCoords, List<NormalVector> globalNormals,
-      List<TriangularFace> faces) {
-    // This is a strange case where an object was made but had no faces, so did not bind any
-    // data to it. In this case, just return the global values.
-    if (faces.size() == 0) {
-      meshDataBuilder.setVertices(globalVertices)
-          .setNormals(globalNormals)
-          .setTextureCoords(globalTextureCoords);
-      return;
-    }
-    
-    List<Vertex> localVertices = Lists.newArrayList();
-    List<TextureCoords> localTextureCoords = Lists.newArrayList();
-    List<NormalVector> localNormals = Lists.newArrayList();
-    List<Integer> localVIndices = Lists.newArrayList();
-    List<Integer> localTCordIndices = Lists.newArrayList();
-    List<Integer> localNIndices = Lists.newArrayList();
-    
-    for (TriangularFace face :  faces) {
-      localizeElements(globalVertices, localVertices, localVIndices, face);
-      
-      if (face.hasNormals()) {
-        localizeElements(globalNormals, localNormals, localNIndices, face);
-      }
-      
-      if (face.hasTextureCoords()) {
-        localizeElements(globalTextureCoords, localTextureCoords, localTCordIndices, face);
-      }
-    }
-    
-    meshDataBuilder.setVertices(localVertices)
-        .setTextureCoords(localTextureCoords)
-        .setNormals(localNormals)
-        .setVertexIndices(localVIndices)
-        .setTextureCoordIndices(localTCordIndices)
-        .setNormalIndices(localNIndices);
-  }
-  
-  private <T> void localizeElements(List<T> globalElems, List<T> localElems,
-      List<Integer> localIndices, TriangularFace face) {
-    List<Integer> vertexIndices = face.getVertexIndices();
-    for (Integer vIndex : vertexIndices) {
-      // The indices in the file are not 0-indexed
-      T elem = globalElems.get(vIndex - 1);
-      if (localElems.contains(elem)) {
-        int pos = getElemPosition(localElems, elem);
-        localIndices.add(pos);
-      } else {
-        localElems.add(elem);
-        localIndices.add(localElems.size() - 1);
-      }
-    }
-  }
-  
-  private <T> int getElemPosition(Collection<T> collection, T elem) {
-    int pos = -1;
-    for (T curElem : collection) {
-      if (elem.equals(curElem)) {
-        break;
-      }
-      pos++;
-    }
-    return pos;
-  }
   private void processElement(String op, String nextElement, List<Vertex> globalVertices,
       List<TextureCoords> globalTextureCoords, List<NormalVector> globalNormals,
       List<TriangularFace> parsedFaces) {

@@ -69,16 +69,16 @@ public class FaceDeclLineParser {
     }
     
     try {
-      vertexIndices.add(Integer.parseInt(componentTokenizer.nextToken()));
+      vertexIndices.add(getIndex(componentTokenizer.nextToken()));
       int delimCount = 0;
       while (componentTokenizer.hasMoreTokens()) {
         String token = componentTokenizer.nextToken();
         if (token.equals(COMPONENT_DELIM)) {
           delimCount++;
         } else if (delimCount == 1) {
-          textureCoordIndices.add(Integer.parseInt(token));
+          textureCoordIndices.add(getIndex(token));
         } else if (delimCount == 2) {
-          normalIndices.add(Integer.parseInt(token));
+          normalIndices.add(getIndex(token));
         } else {
           throwInvalidFaceComponentException(component);
         }
@@ -87,6 +87,11 @@ public class FaceDeclLineParser {
       throwInvalidFaceComponentException(component);
     }
     
+  }
+  
+  // Parses string integer and accounts for the fact that .obj is not 0-indexed
+  private int getIndex(String token) {
+    return Integer.parseInt(token) - 1;
   }
   
   private boolean validComponentTokenCount(StringTokenizer componentTokenizer) {

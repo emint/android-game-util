@@ -80,16 +80,16 @@ public class FaceDeclLineParserTest {
   
   @Test
   public void testFaceAllValues() {
-    List<Integer> expectedVertex = Lists.newArrayList(1, 2, 3);
-    List<Integer> expectedNormal = Lists.newArrayList(3, 4, 1);
-    List<Integer> expectedTextureCoords = Lists.newArrayList(2, 3, 2);
+    List<Integer> expectedVertex = Lists.newArrayList(0, 1, 2);
+    List<Integer> expectedNormal = Lists.newArrayList(2, 3, 0);
+    List<Integer> expectedTextureCoords = Lists.newArrayList(1, 2, 1);
     testProperFaceParse("f 1/2/3 2/3/4 3/2/1", new TriangularFace(expectedVertex, expectedNormal,
         expectedTextureCoords));
   }
   
   @Test
   public void testFaceOnlyVertices() {
-    List<Integer> expectedVertex = Lists.newArrayList(1, 2, 3);
+    List<Integer> expectedVertex = Lists.newArrayList(0, 1, 2);
     List<Integer> expectedNormal = Lists.newArrayList();
     List<Integer> expectedTextureCoords = Lists.newArrayList();
     testProperFaceParse("f 1 2 3", new TriangularFace(expectedVertex, expectedNormal,
@@ -98,8 +98,8 @@ public class FaceDeclLineParserTest {
   
   @Test
   public void testFaceVerticesAndNormals() {
-    List<Integer> expectedVertex = Lists.newArrayList(1, 2, 3);
-    List<Integer> expectedNormal = Lists.newArrayList(3, 4, 1);
+    List<Integer> expectedVertex = Lists.newArrayList(0, 1, 2);
+    List<Integer> expectedNormal = Lists.newArrayList(2, 3, 0);
     List<Integer> expectedTextureCoords = Lists.newArrayList();
     testProperFaceParse("f 1//3 2//4 3//1", new TriangularFace(expectedVertex, expectedNormal,
         expectedTextureCoords));
@@ -107,9 +107,9 @@ public class FaceDeclLineParserTest {
   
   @Test
   public void testFaceVerticesAndTexture() {
-    List<Integer> expectedVertex = Lists.newArrayList(1, 2, 3);
+    List<Integer> expectedVertex = Lists.newArrayList(0, 1, 2);
     List<Integer> expectedNormal = Lists.newArrayList();
-    List<Integer> expectedTextureCoords = Lists.newArrayList(2, 3, 2);
+    List<Integer> expectedTextureCoords = Lists.newArrayList(1, 2, 1);
     testProperFaceParse("f 1/2 2/3 3/2", new TriangularFace(expectedVertex, expectedNormal,
         expectedTextureCoords));
   }
