@@ -29,7 +29,7 @@ public class ObjFileMeshObjectParser implements MeshObjectParser<ResourceObjFile
   private static final String OBJECT_LINE_HEADER = "o";
   private static final String COMMENT_LINE_HEADER = "#";
 
-  //private final Logger logger = LoggerFactory.getLogger(ObjFileMeshObjectParser.class);
+  private static final Logger logger = LoggerFactory.getLogger(ObjFileMeshObjectParser.class);
   
   private final VertexDeclLineParser vertexLineParser;
   private final NormalVectorDeclLineParser normalLineParser;
@@ -103,7 +103,7 @@ public class ObjFileMeshObjectParser implements MeshObjectParser<ResourceObjFile
         processElement(op, nextElement, globalVertices, globalTextureCoords, globalNormals,
             faces);
       } catch (IllegalArgumentException e) {
-        //logger.warn("Error processing element in file.", e);
+        logger.warn("Error processing element in file.", e);
       }
     }
     makeLocalMeshData(meshDataBuilder, globalVertices, globalTextureCoords, globalNormals, faces);
