@@ -46,11 +46,11 @@ public class TriangularFace {
   }
   
   public boolean hasNormals() {
-    return !normalIndices.isEmpty();
+    return normalIndices != null && !normalIndices.isEmpty();
   }
   
   public boolean hasTextureCoords() {
-    return !textureIndices.isEmpty();
+    return textureIndices != null && !textureIndices.isEmpty();
   }
   
   @Override

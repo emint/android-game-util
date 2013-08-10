@@ -223,10 +223,9 @@ public class TestObjFileGenerator {
     int index = face * NUM_COMPONENTS_PER_FACE + component;
     
     // This offset ensures each face is reading into its own set of vertices.
-    int offset = objToWriteFor * (vIndices.size() / NUM_VERTEX_COMPONENTS);
+    int offset = objToWriteFor * (vIndices.size() / NUM_COMPONENTS_PER_FACE);
     
     file.append(vIndices.get(index) + offset);
-    
     if (textureCoordsSet) {
       file.append("/")
           .append(tIndices.get(index) + offset);

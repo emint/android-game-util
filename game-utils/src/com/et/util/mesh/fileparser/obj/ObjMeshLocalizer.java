@@ -22,7 +22,7 @@ public class ObjMeshLocalizer {
       List<TriangularFace> faces) {
     // This is a strange case where an object was made but had no faces, so did not bind any
     // data to it. In this case, just return the global values.
-    if (faces.size() == 0) {
+    if (faces == null || faces.size() == 0) {
       meshDataBuilder.setVertices(globalVertices)
           .setNormals(globalNormals)
           .setTextureCoords(globalTextureCoords);

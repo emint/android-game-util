@@ -12,11 +12,12 @@ import com.et.util.mesh.data.MeshData;
 import com.et.util.mesh.data.MeshObject;
 import com.et.util.mesh.fileparser.MeshFileParserModule;
 import com.et.util.primitives.TextureCoords;
+import com.et.util.primitives.TriangularFace;
 import com.et.util.primitives.geom.NormalVector;
 import com.et.util.primitives.geom.Vertex;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 /**
  * Tests for {@link ObjFileMeshObjectParser}.
@@ -30,31 +31,39 @@ public class ObjFileMeshObjectParserTest {
   private static final int NUM_NORMAL_COMPONENTS = 3;
   private static final int NUM_VERTEX_COMPONENTS = 4;
   
-  @Inject ObjFileMeshObjectParser parser;
-  TestObjFileGenerator fileGenerator;
+  private ObjFileMeshObjectParser parser;
+  private ObjMeshLocalizer localizer;
+  private TestObjFileGenerator fileGenerator;
   
   private List<Float> vertices;
   private List<Integer> vIndices;
+  private List<Integer> expectedVIndices;
   private List<Float> normals;
   private List<Integer> nIndices;
+  private List<Integer> expectedNIndices;
   private List<Float> texCoords;
   private List<Integer> tIndices;
+  private List<Integer> expectedTIndices;
   
   @Before
   public void setUp() {
-    parser = Guice.createInjector(new MeshFileParserModule()).getInstance(
-        ObjFileMeshObjectParser.class);
+    Injector injector = Guice.createInjector(new MeshFileParserModule());
+    parser = injector.getInstance(ObjFileMeshObjectParser.class);
+    localizer = injector.getInstance(ObjMeshLocalizer.class);
     
     int numIndicesToGenerate = NUM_FACES * NUM_COMPONENTS_PER_FACE;
 
     vertices = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_VERTEX_COMPONENTS);
     vIndices = generateRandomIndices(numIndicesToGenerate, /* maxIndex */ NUM_OF_ELEMENTS);
+    expectedVIndices = accountForZeroIndex(vIndices);
     
     normals = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_NORMAL_COMPONENTS);
     nIndices = generateRandomIndices(numIndicesToGenerate, /* maxIndex */ NUM_OF_ELEMENTS);
+    expectedNIndices = accountForZeroIndex(nIndices);
     
     texCoords = generateRandomFloats(/* numToGenerate */ NUM_OF_ELEMENTS * NUM_TEX_COMPONENTS);
     tIndices = generateRandomIndices(numIndicesToGenerate, /* maxIndex */ NUM_OF_ELEMENTS);
+    expectedTIndices = accountForZeroIndex(tIndices);
     
     fileGenerator = new TestObjFileGenerator(vertices, texCoords, normals, vIndices, nIndices,
         tIndices);
@@ -119,7 +128,6 @@ public class ObjFileMeshObjectParserTest {
     String file = fileGenerator.withVertices()
         .withFacesForSetComponents()
         .generateFile();
-    List<Integer> expectedVIndices = accountForZeroIndex(vIndices);
     MeshData data = createMeshData("default", vertices, (List<Float>) null, (List<Float>) null,
         expectedVIndices, (List<Integer>) null, (List<Integer>) null);
     testGeneration(file, data);
@@ -132,8 +140,8 @@ public class ObjFileMeshObjectParserTest {
         .withFacesForSetComponents()
         .generateFile();
     
-    MeshData data = createMeshData("default", vertices, normals, (List<Float>) null, vIndices, 
-        nIndices, (List<Integer>) null);
+    MeshData data = createMeshData("default", vertices, normals, (List<Float>) null,
+        expectedVIndices, expectedNIndices, (List<Integer>) null);
     testGeneration(file, data);
   }
   
@@ -144,8 +152,8 @@ public class ObjFileMeshObjectParserTest {
         .withFacesForSetComponents()
         .generateFile();
     
-    MeshData data = createMeshData("default", vertices, (List<Float>) null, texCoords, vIndices, 
-        (List<Integer>) null, tIndices);
+    MeshData data = createMeshData("default", vertices, (List<Float>) null, texCoords, 
+        expectedVIndices, (List<Integer>) null, expectedTIndices);
     testGeneration(file, data);
   }
   
@@ -158,8 +166,8 @@ public class ObjFileMeshObjectParserTest {
         .withFacesForSetComponents()
         .generateFile();
     
-    MeshData data = createMeshData("default", vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
+    MeshData data = createMeshData("default", vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
     testGeneration(file, data);
   }
   
@@ -169,8 +177,8 @@ public class ObjFileMeshObjectParserTest {
         .withFacesForSetComponents()
         .generateFile();
     
-    MeshData data = createMeshData("default", vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
+    MeshData data = createMeshData("default", vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
     testGeneration(file, data);
   }
   
@@ -185,8 +193,8 @@ public class ObjFileMeshObjectParserTest {
         .withDefaultObject(false)
         .generateFile();
     
-    MeshData data = createMeshData(objName, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
+    MeshData data = createMeshData(objName, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
     testGeneration(file, data);
   }
   
@@ -205,12 +213,12 @@ public class ObjFileMeshObjectParserTest {
         .withDefaultObject(false)
         .generateFile();
     
-    MeshData data1 = createMeshData(objName1, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
-    MeshData data2 = createMeshData(objName2, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
-    MeshData data3 = createMeshData(objName3, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
+    MeshData data1 = createMeshData(objName1, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
+    MeshData data2 = createMeshData(objName2, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
+    MeshData data3 = createMeshData(objName3, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
     testGeneration(file, data1, data2, data3);
   }
   
@@ -227,12 +235,12 @@ public class ObjFileMeshObjectParserTest {
         .forObject(objName3)
         .generateFile();
     
-    MeshData data1 = createMeshData(objName1, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
-    MeshData data2 = createMeshData(objName2, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
-    MeshData data3 = createMeshData(objName3, vertices, normals, texCoords, vIndices, nIndices, 
-        tIndices);
+    MeshData data1 = createMeshData(objName1, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
+    MeshData data2 = createMeshData(objName2, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
+    MeshData data3 = createMeshData(objName3, vertices, normals, texCoords, expectedVIndices, 
+        expectedNIndices, expectedTIndices);
     testGeneration(file, data1, data2, data3);
   }
   
@@ -243,7 +251,7 @@ public class ObjFileMeshObjectParserTest {
     List<Float> obj1Vertices = generateRandomFloats(numObj1Vertices * NUM_VERTEX_COMPONENTS);
     List<Integer> obj1VIndices = generateRandomIndices(5 * NUM_COMPONENTS_PER_FACE,
         numObj1Vertices);
-    
+    List<Integer> expectedObj1VIndices = accountForZeroIndex(obj1VIndices);
     
     TestObjFileGenerator fileGeneratorObj1 = new TestObjFileGenerator(obj1Vertices, 
         (List<Float>) null, (List<Float>) null, obj1VIndices, (List<Integer>) null,
@@ -266,10 +274,10 @@ public class ObjFileMeshObjectParserTest {
     
     
     MeshData data1 = createMeshData(objName1, obj1Vertices, (List<Float>) null, (List<Float>) null, 
-        obj1VIndices, (List<Integer>) null, (List<Integer>) null);
+        expectedObj1VIndices, (List<Integer>) null, (List<Integer>) null);
     // We expect that the vertices from obj1 will be brought into the second mesh
     MeshData data2 = createMeshData(objName2, obj1Vertices, (List<Float>) null, (List<Float>) null, 
-        obj1VIndices, (List<Integer>) null, (List<Integer>) null);
+        expectedObj1VIndices, (List<Integer>) null, (List<Integer>) null);
     testGeneration(file1 + file2, data1, data2);
   }
   
@@ -303,14 +311,37 @@ public class ObjFileMeshObjectParserTest {
     List<Vertex> vertexList = convertToVertexList(vertices);
     List<NormalVector> normalsList = convertToNormalList(normals);
     List<TextureCoords> textureList = convertToTextureCoordinates(texCoords);
-    return new MeshData.Builder().setVertices(vertexList)
-        .setNormals(normalsList)
-        .setTextureCoords(textureList)
-        .setVertexIndices(vIndices)
-        .setNormalIndices(nIndices)
-        .setTextureCoordIndices(tIndices)
-        .setName(name)
-        .build();
+    List<TriangularFace> faces = (vIndices == null ? null :
+      makeFaces(vIndices, nIndices, tIndices));
+    MeshData.Builder newMeshBuilder = new MeshData.Builder()
+        .setName(name);
+    localizer.makeLocalMeshData(newMeshBuilder, vertexList, textureList,
+        normalsList, faces);
+    return newMeshBuilder.build();
+  }
+
+  private List<TriangularFace> makeFaces(List<Integer> vIndices, List<Integer> nIndices,
+      List<Integer> tIndices) {
+    List<TriangularFace> faces = Lists.newArrayList();
+    int numFaces = vIndices.size() / NUM_COMPONENTS_PER_FACE;
+    for (int face = 0; face < numFaces; face++) {
+      int start = face * NUM_COMPONENTS_PER_FACE;
+      int end = start + NUM_COMPONENTS_PER_FACE;
+      List<Integer> faceVIndices = vIndices.subList(start, end);
+      
+      List<Integer> faceTIndices = null;
+      if (tIndices != null) {
+        faceTIndices = tIndices.subList(start, end);
+      }
+      
+      List<Integer> faceNIndices = null;
+      if (nIndices != null) {
+        faceNIndices = nIndices.subList(start, end);
+      }
+      
+      faces.add(new TriangularFace(faceVIndices, faceNIndices, faceTIndices));
+    }
+    return faces;
   }
 
   private List<NormalVector> convertToNormalList(List<Float> normals) {
