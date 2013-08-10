@@ -119,9 +119,9 @@ public class ObjFileMeshObjectParserTest {
     String file = fileGenerator.withVertices()
         .withFacesForSetComponents()
         .generateFile();
-    
+    List<Integer> expectedVIndices = accountForZeroIndex(vIndices);
     MeshData data = createMeshData("default", vertices, (List<Float>) null, (List<Float>) null,
-        vIndices, (List<Integer>) null, (List<Integer>) null);
+        expectedVIndices, (List<Integer>) null, (List<Integer>) null);
     testGeneration(file, data);
   }
   
@@ -271,6 +271,14 @@ public class ObjFileMeshObjectParserTest {
     MeshData data2 = createMeshData(objName2, obj1Vertices, (List<Float>) null, (List<Float>) null, 
         obj1VIndices, (List<Integer>) null, (List<Integer>) null);
     testGeneration(file1 + file2, data1, data2);
+  }
+  
+  private List<Integer> accountForZeroIndex(List<Integer> vIn) {
+    List<Integer> newList = Lists.newArrayList();
+    for (Integer integer : vIn) {
+      newList.add(integer - 1);
+    }
+    return newList;
   }
   
   private void testGeneration(String file, MeshData... data) {
