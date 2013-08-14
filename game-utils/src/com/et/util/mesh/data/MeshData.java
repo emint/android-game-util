@@ -1,5 +1,7 @@
 package com.et.util.mesh.data;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
@@ -37,30 +39,91 @@ public class MeshData {
   public FloatBuffer getVerticies() {
     return verticies;
   }
-
-
+  
+  /**
+   * Returns vertices as a {@link ByteOrder#nativeOrder()} {@link FloatBuffer}.
+   */
+  public FloatBuffer getVerticesForAndroid() {
+    return getForAndroid(verticies);
+  }
+  
   public FloatBuffer getNormals() {
     return normals;
   }
-
+  
+  /**
+   * Returns normals as a {@link ByteOrder#nativeOrder()} {@link FloatBuffer}.
+   */
+  public FloatBuffer getNormalsForAndroid() {
+    return getForAndroid(normals);
+  }
+  
   public FloatBuffer getTextureCoords() {
     return textureCoords;
   }
-
+  
+  /**
+   * Returns texture coordinates as a {@link ByteOrder#nativeOrder()} {@link FloatBuffer}.
+   */
+  public FloatBuffer getTexCoordsForAndroid() {
+    return getForAndroid(textureCoords);
+  }
+  
   public IntBuffer getVertexIndices() {
     return vertexIndices;
   }
-
+  
+  /**
+   * Returns vertex indices as a {@link ByteOrder#nativeOrder()} {@link IntBuffer}.
+   */
+  public IntBuffer getVertIndicesForAndroid() {
+    return getForAndroid(vertexIndices);
+  }
+  
   public IntBuffer getNormalIndices() {
     return normalIndices;
   }
-
+  
+  /**
+   * Returns normal indices as a {@link ByteOrder#nativeOrder()} {@link IntBuffer}.
+   */
+  public IntBuffer getNormalIndicesForAndroid() {
+    return getForAndroid(normalIndices);
+  }
+  
   public IntBuffer getTextureIndices() {
     return textureIndices;
   }
-
+  
+  /**
+   * Returns texture coord indices as a {@link ByteOrder#nativeOrder()} {@link IntBuffer}.
+   */
+  public IntBuffer getTexCoordIndicesForAndroid() {
+    return getForAndroid(textureIndices);
+  }
+  
   public String getName() {
     return name;
+  }
+
+  private FloatBuffer getForAndroid(FloatBuffer buffer) {
+    buffer.rewind();
+    ByteBuffer bb = ByteBuffer.allocateDirect(buffer.capacity() * 4);
+    bb.order(ByteOrder.nativeOrder());
+    FloatBuffer toRet = bb.asFloatBuffer().put(buffer);
+    toRet.position(0);
+    buffer.rewind();
+    return toRet;
+  }
+  
+  private IntBuffer getForAndroid(IntBuffer buffer) {
+    buffer.rewind();
+    ByteBuffer bb = ByteBuffer.allocateDirect(buffer.capacity() * 4);
+    bb.order(ByteOrder.nativeOrder());
+    IntBuffer toRet = bb.asIntBuffer().put(buffer);
+    toRet.position(0);
+    buffer.rewind();
+    return toRet;
   }
   
   @Override
