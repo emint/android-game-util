@@ -64,7 +64,11 @@ public class ObjFileMeshObjectParser implements MeshObjectParser<ResourceObjFile
     while (file.hasMoreElements()) {
       MeshData data = processMeshData(file, globalVertices, globalNormals,
           globalTextureCoords);
-      newObject.addMesh(data);
+      // This is a bit of a hack we put into place to avoid parsing any preamble declarations as
+      // a mesh.
+      if (data.getVerticies().capacity() > 0) {
+        newObject.addMesh(data);
+      }
     }
     return newObject;
   }
